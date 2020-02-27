@@ -65,6 +65,9 @@ names(cn_test)[7] <- "DailyReported"
 cn_test2 <- cn_test %>% 
   filter(DailyReported > 0)
 
+cn_test <- cn_test %>% 
+  filter(DailyReported > 0)
+
 
 cn_ben <- cn_test2 %>% 
   separate(DailyReported, into = c("FirstDigit"), sep = 1)
@@ -127,7 +130,7 @@ kuiper.test(cn_ben1$perc, alpha = .05)
 
 
 mytest <- cn_ben2 %>% 
-  filter(province == "Anhui",
+  filter(province == "Fujian",
          FirstDigit != 0)
 
 
@@ -177,14 +180,19 @@ cn_ben_cum_total <- cn_ben_cum %>%
   mutate(perc = count/sum(count))
 
 
+ch <- chisq.test(cn_ben_cum_total$perc, benford$perc)
+
 cn_ben_cum_total %>% 
   ggplot() +
-  geom_histogram(aes(x = FirstDigit, y = perc), stat = "identity", fill = "red") +
-  geom_point(data = benford, aes(x = FirstDigit, y = perc)) + 
-  theme_minimal()
+  geom_histogram(aes(x = reorder(as.factor(FirstDigit), FirstDigit), y = perc), stat = "identity", fill = "firebrick", color = "black") +
+  geom_point(data = benford, aes(x = reorder(FirstDigit, FirstDigit), y = perc, color = "Expected Value")) +
+  labs(x = "First Digit", y = "Percentage of Total", title = "The Cumulative Daily Reports of the Coronavirus for all of China", subtitle = paste0("P-value: ", round(ch$p.value, 2)), color = "  Benford's Law") +
+  scale_color_manual(values = "black") +
+  theme_minimal() +
+  theme(legend.position = c(.6,.73),
+        plot.background = element_blank())
 
 
-chisq.test(cn_ben_cum_total$perc, benford$perc)
 
 ks <- ks.test(cn_ben_cum_total$perc, benford$perc)
 1-ks$p.value
