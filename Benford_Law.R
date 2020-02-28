@@ -55,7 +55,12 @@ dat <- dat %>%
 
 dat %>% 
   ggplot() +
-  geom_histogram(aes(x = Numbers, y = count), stat = "identity")
+  geom_histogram(aes(x = Numbers, y = count/10000), stat = "identity", fill = "black") +
+  geom_text(aes(x = Numbers, y = count/10000, label = round(count/10000, digits = 3)), vjust = -.15, fontface = "bold") +
+  theme_minimal() +
+  labs(x = "First Digit", y = "Percentage of Total", title = "Benford's Law")
+  
+  
 
 
 

@@ -104,10 +104,11 @@ cn_ben2 <- cn_ben %>%
 
 cn_ben2 %>% 
   ggplot() +
-  geom_histogram(aes(x = FirstDigit, y = perc), stat = "identity", fill = "red") +
+  geom_histogram(aes(x = FirstDigit, y = perc), stat = "identity", fill = "red", color = "black") +
   facet_wrap(~province) +
   geom_point(data = benford, aes(x = FirstDigit, y = perc)) + 
-  theme_minimal()
+  theme_minimal() +
+  labs(x = "First Digit", y = "Percentage of Total", title = "")
 
 # Counts <- cn_test %>% 
 #   unique() %>% 
@@ -180,12 +181,18 @@ cn_ben_cum_total <- cn_ben_cum %>%
   mutate(perc = count/sum(count))
 
 
-ch <- chisq.test(cn_ben_cum_total$perc, benford$perc)
+
+test <- table(cn_ben_cum_total$FirstDigit, benford$FirstDigit)
+
+ch <- chisq.test(test)
+
+
 
 cn_ben_cum_total %>% 
   ggplot() +
   geom_histogram(aes(x = reorder(as.factor(FirstDigit), FirstDigit), y = perc), stat = "identity", fill = "firebrick", color = "black") +
   geom_point(data = benford, aes(x = reorder(FirstDigit, FirstDigit), y = perc, color = "Expected Value")) +
+  geom_text(aes(x = FirstDigit, y = perc/2, label = round(perc, digits = 3)), fontface = "bold") +
   labs(x = "First Digit", y = "Percentage of Total", title = "The Cumulative Daily Reports of the Coronavirus for all of China", subtitle = paste0("P-value: ", round(ch$p.value, 2)), color = "  Benford's Law") +
   scale_color_manual(values = "black") +
   theme_minimal() +
@@ -213,10 +220,11 @@ cn_ben_prov <- cn_ben_cum %>%
 
 cn_ben_prov %>% 
   ggplot() +
-  geom_histogram(aes(x = FirstDigit, y = perc), stat = "identity", fill = "red") +
+  geom_histogram(aes(x = FirstDigit, y = perc), stat = "identity", fill = "red", color = "black") +
   facet_wrap(~province) +
   geom_point(data = benford, aes(x = FirstDigit, y = perc)) + 
-  theme_minimal()
+  theme_minimal() +
+  labs(x = "First Digit", y = "Percentage of Total", title = "Cumulative Daily Reports of the Coronavirus per Province")
 
 
 mytest_prov <- cn_ben_prov %>% 
