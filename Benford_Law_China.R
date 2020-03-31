@@ -9,7 +9,7 @@ library(circular)
 
 data <- load_nCov2019(lang = "en")
 
-cn_test <- data$province
+cn_test <- data$data
 
 cn_test <- cn_test %>% 
   unique()
@@ -182,9 +182,12 @@ cn_ben_cum_total <- cn_ben_cum %>%
 
 
 
-test <- table(cn_ben_cum_total$FirstDigit, benford$FirstDigit)
+test <- table(cn_ben_cum_total$perc, benford$perc)
 
-ch <- chisq.test(test)
+chisq <- sum((cn_ben_cum_total$count - sum(cn_ben_cum_total$count) * benford$perc)^2 /  (sum(cn_ben_cum_total$count) * benford$perc))
+
+
+ch <- pchisq(11.18, 8)
 
 
 
@@ -193,7 +196,7 @@ cn_ben_cum_total %>%
   geom_histogram(aes(x = reorder(as.factor(FirstDigit), FirstDigit), y = perc), stat = "identity", fill = "firebrick", color = "black") +
   geom_point(data = benford, aes(x = reorder(FirstDigit, FirstDigit), y = perc, color = "Expected Value")) +
   geom_text(aes(x = FirstDigit, y = perc/2, label = round(perc, digits = 3)), fontface = "bold") +
-  labs(x = "First Digit", y = "Percentage of Total", title = "The Cumulative Daily Reports of the Coronavirus for all of China", subtitle = paste0("P-value: ", round(ch$p.value, 2)), color = "  Benford's Law") +
+  labs(x = "First Digit", y = "Percentage of Total", title = "The Cumulative Daily Reports of the Coronavirus for all of China", subtitle = paste0("P-value: ", round(ch, 2)), color = "  Benford's Law") +
   scale_color_manual(values = "black") +
   theme_minimal() +
   theme(legend.position = c(.6,.73),
@@ -205,7 +208,6 @@ ks <- ks.test(cn_ben_cum_total$perc, benford$perc)
 1-ks$p.value
 
 kuiper.test(cn_ben_cum_total$perc, alpha = .05)
-
 
 
 

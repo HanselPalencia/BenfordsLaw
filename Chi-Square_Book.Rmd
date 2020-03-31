@@ -1,0 +1,172 @@
+---
+title: 
+author: "Hansel Palencia"
+date: "March 24, 2020"
+output: 
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(pander)
+library(tidyquant)
+
+```
+
+
+
+### Chi-Square Goodness of Fit Test
+
+
+The chi-square goodness of fit test is shown below.
+
+$$
+\sum\frac{(O_i - E_i)^2}{E_i}
+$$
+
+The purpose of this test is to show whether a group of observations follows an expected distribution.
+
+### Hypothesis
+
+For a chi-square goodness of fit test, the hypotheses take the following form.
+
+- Ho: The data are consistent with a specified distribution.
+- Ha: The data are not consistent with a specified distribution.
+
+These are then to be compared to an $\alpha$ (alpha) of your choosing (.01, .05, .1)
+
+
+### Assumptions
+
+The chi-square goodness of fit test is appropriate when the following conditions are met:
+
+- The data are from a simple random sample
+- The groups that are being looked at is a categorical, i.e. Qualitative
+- There are at least five expected observations per group.
+
+
+### Benford's Law
+
+Let's take a look at Benford's law as an example of how to use the chi-square goodness of fit test.
+
+Benford's law states that the first digits of a random group of numbers always follows a certain pattern. 
+
+```{r, warning = F}
+benford <- data.frame(FirstDigit = c(1,2,3,4,5,6,7,8,9), perc = c(.301,.176,.125,.097,.079,.067,.058,.051,.046))
+
+benford %>% 
+ggplot() +
+  geom_histogram(aes(x = reorder(as.factor(FirstDigit), FirstDigit), y = perc), stat = "identity", fill = "firebrick", color = "black") +
+  geom_point(data = benford, aes(x = reorder(FirstDigit, FirstDigit), y = perc)) +
+  geom_text(aes(x = FirstDigit, y = perc/2, label = round(perc, digits = 3)), fontface = "bold") +
+  labs(x = "First Digit", y = "Percentage of Total", title = "Benford's Law") +
+  scale_color_manual(values = "black") +
+  theme_minimal() +
+  theme(legend.position = c(.6,.73),
+        plot.background = element_blank())
+
+
+```
+
+
+
+We can assume that if I were to take a set of numbers and pull their first digits from that set then we should see this same distribution or something close to it. This is the purpose of the chi-square goodness of fit test.
+
+
+### Example
+
+Let's take a look at the distribution of the first digits of the Walmart stock. This is a good test set because there are a lot of records of what the stock has been over many years, and we also know that it's truly random. From there we will randomly subset all of walmart data and we will perform a goodness of fit test. 
+
+
+
+```{r, warning = F}
+
+
+walmart_data <- tidyquant::tq_get("WMT")
+
+set.seed(1)
+
+dat <- sample(1:nrow(walmart_data),1000,replace=F)
+
+dat <- as.character(dat)
+
+test <- data.frame(dat)
+dat <- test %>% 
+separate(dat, into = c("FirstDigit"), sep = 1)
+
+dat <- dat %>% 
+  group_by(FirstDigit) %>% 
+  summarise(count = n()) %>% 
+  mutate(perc = count/sum(count))
+
+
+dat %>% 
+  ggplot() +
+  geom_histogram(aes(x = reorder(as.factor(FirstDigit), FirstDigit), y = perc), stat = "identity", fill = "skyblue", color = "black") +
+  geom_point(data = benford, aes(x = reorder(FirstDigit, FirstDigit), y = perc, color = "Expected Value")) +
+  geom_text(aes(x = FirstDigit, y = perc/2, label = round(perc, digits = 3)), fontface = "bold") +
+  labs(x = "First Digit", y = "Percentage of Total", title = "Comparing Walmart Stock to Benford's Law", color = "  Benford's Law") +
+  scale_color_manual(values = "black") +
+  theme_minimal() +
+  theme(legend.position = c(.6,.73),
+        plot.background = element_blank())
+
+
+```
+
+
+
+
+As we can se it looks pretty similar to Benford's Law, but lets take a look at the actual p-value calculated from the goodness of fit test.
+
+
+The first thing we need to do is find the expected counts of what Benford's Law says the distribution should be. To do this, we multiply Benford's distribution percentages by the total.
+
+```{r, warning = F}
+
+pander(benford$perc*sum(dat$count))
+
+```
+
+
+This should be the expected count, now let's calculate the chi-square value based on the formula at the beginning of this page.
+
+In Laman's - The observed values minus the expected values all squared / divided by the expected values, all summed.
+
+
+
+$$
+\sum\frac{(O_i - E_i)^2}{E_i}
+$$
+
+```{r}
+
+pander(sum((dat$count - benford$perc*1000)^2/(benford$perc*1000)))
+
+```
+
+This is the chi-squared value.
+
+We can now calculate the the p-value by using a chi-square test.
+
+```{r}
+
+pander(pchisq(206.0022, 8, lower.tail = F))
+
+
+```
+
+
+As wee can see the p-value is less than our $\alpha$ of .05, therefore we fail to reject and we can say that the random sample of numbers from the Walmart stock follows Benford's Law.
+
+
+
+
+
+
+
+
+
