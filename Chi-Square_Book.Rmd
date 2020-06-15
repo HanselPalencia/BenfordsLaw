@@ -154,7 +154,7 @@ We can now calculate the the p-value by using a chi-square test.
 
 ```{r}
 
-pander(pchisq(206.0022, 8, lower.tail = F))
+pander(chisq.test(dat$count, p = benford$perc))
 
 
 ```

@@ -18,10 +18,15 @@ library(nCov2019)
 library(stats)
 library(circular)
 
+source("Global.R")
+
+
 # Define UI for application that draws a histogram
-ui <- navbarPage(title = "Advising Office - BYU-Idaho",
-                 windowTitle = "Advising Office - BYU-Idaho",
+ui <- navbarPage(title = "Benford's Law",
                  fluidPage(theme = shinytheme("cerulean"),
+                           sidebarPanel(width = 3
+                             
+                           ),
                              
                              # Show a plot of the generated distribution
                              mainPanel(width = 8,
@@ -32,8 +37,9 @@ ui <- navbarPage(title = "Advising Office - BYU-Idaho",
                                        
                                        tabsetPanel(type = "tabs",
                                                    
-                                                   tabPanel("Benford's Law Data Download",
+                                                   tabPanel("China Coronavirus Reporting",
                                                             fluidRow(
+                                                              dataTableOutput("table")
                                                               # column(6,
                                                               #        highchartOutput(outputId = "icp_C", width = "100%",height = "700px")),
                                                               # column(6,
@@ -49,8 +55,36 @@ ui <- navbarPage(title = "Advising Office - BYU-Idaho",
 
 
 
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  
+  
+  seed <- eventReactive(input$push, {
+    
+    sample(1:20, 1)
+    
+  })
    
+  
+  output$table <- renderDataTable({
+    
+    my_func(seed())
+    
+    
+  })
+  
+  
+  data <- reactive({
+    my_func(seed())
+    
+    
+  })
+  
+  
+  
+  
+  
+  
   
 }
 
